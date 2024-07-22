@@ -33,7 +33,7 @@ function hasRequiredFields(req, res, next) {
       }
     });
   }
-  // Validate order has needed properties, else error
+// Validate order has needed properties, else error
   if (!deliverTo || !mobileNumber || !dishes || !dishes.length || !Array.isArray(dishes)
   ) {
     let missingProperty = !deliverTo ? "deliverTo" : !mobileNumber ? "mobileNumber" : "dishes";
@@ -86,7 +86,14 @@ function updateValidation(req, res, next) {
 }
 
 // Add Delete validation for pending status here
-
+function deleteValidation(req, res, next) {
+  res.locals.order.status !== "pending" ?
+  next({
+    status: 400,
+    message: "Orders cannot be deleted unless thay have 'pending' status"
+  }) :
+  next();
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // ~~~~~~~~~~~~CRUD OPERATIONS~~~~~~~~~~~~ //
@@ -125,5 +132,5 @@ module.exports = {
   create: [hasRequiredFields, create],
   read: [confirmOrderExists, read],
   update: [confirmOrderExists, hasRequiredFields, updateValidation, update],
-  delete: [confirmOrderExists, destroy]
+  delete: [confirmOrderExists, deleteValidation, destroy]
 };
