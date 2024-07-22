@@ -62,6 +62,7 @@ function create(req, res) {
   dishes.push(res.locals.dish);
   res.locals.newDish;
 }
+
 // Add handler function to read a dish by ID
 function read(req, res) {
   res.locals.dish;

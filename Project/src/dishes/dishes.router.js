@@ -11,7 +11,7 @@ router
   .all(methodNotAllowed);
 // Add route to handle ‘/dishes/:dishId’ with handlers for read and update operations.
 router
-    .route("/dishId")
+    .route("/:dishId")
     .get(controller.read)
     .put(controller.update)
     .all(methodNotAllowed);
