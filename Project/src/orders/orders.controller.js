@@ -6,9 +6,6 @@ const orders = require(path.resolve("src/data/orders-data"));
 // Use this function to assigh ID's when necessary
 const nextId = require("../utils/nextId");
 
-// TODO: Implement the /orders handlers needed to make the tests pass
-// Confirm orders have required property types: id, deliverTo. mobileNumber, dishes
-
 // Order validation middleware
 function confirmOrderExists(req, res, next) {
   const { orderId } = req.params;
@@ -37,18 +34,9 @@ function hasRequiredFields(req, res, next) {
     });
   }
   // Validate order has needed properties, else error
-  if (
-    !deliverTo ||
-    !mobileNumber ||
-    !dishes ||
-    !dishes.length ||
-    !Array.isArray(dishes)
+  if (!deliverTo || !mobileNumber || !dishes || !dishes.length || !Array.isArray(dishes)
   ) {
-    let missingProperty = !deliverTo
-      ? "deliverTo"
-      : !mobileNumber
-      ? "mobileNumber"
-      : "dishes";
+    let missingProperty = !deliverTo ? "deliverTo" : !mobileNumber ? "mobileNumber" : "dishes";
     return next({
       status: 400,
       message: `Order must include a ${missingProperty} property`,
@@ -67,11 +55,7 @@ function hasRequiredFields(req, res, next) {
 function updateValidation(req, res, next) {
   const { data } = req.body;
   const { orderId } = req.params;
-  const validStatuses = [
-    "pending",
-    "preparing",
-    "out-for-delivery",
-    "delivered",
+  const validStatuses = ["pending", "preparing", "out-for-delivery", "delivered",
   ];
 
   if (data.id && data.id !== orderId) {
@@ -101,6 +85,9 @@ function updateValidation(req, res, next) {
   }
 }
 
+// Add Delete validation for pending status here
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // ~~~~~~~~~~~~CRUD OPERATIONS~~~~~~~~~~~~ //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -111,13 +98,21 @@ function list(req, res, next) {
 }
 
 // Add a handler function to function to create an order.
-function create(req, res, next) {}
+function create(req, res, next) {
+  res.locals.create.id = nextId()
+  orders.push(res.locals.create)
+  res.status(201).json({ data : res.locals})
+}
 
 // Add a handler function to read an order by ID.
-function read(req, res, next) {}
+function read(req, res, next) {
+  res.json({ data: res.locals.order})
+}
 
 // Add a handler function to update an order.
-function update(req, res, next) {}
+function update(req, res, next) {
+  res.json({ data : res.locals.update})
+}
 
 // Add a handler function to delete an order.
 function destroy(req, res, next) {
@@ -129,6 +124,6 @@ module.exports = {
   list,
   create: [hasRequiredFields, create],
   read: [confirmOrderExists, read],
-  update: [confirmOrderExists, updateValidation, update],
+  update: [confirmOrderExists, hasRequiredFields, updateValidation, update],
   delete: [confirmOrderExists, destroy]
 };

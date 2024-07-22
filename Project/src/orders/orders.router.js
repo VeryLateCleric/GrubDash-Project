@@ -18,7 +18,6 @@ router
   .post(controller.create)
   .all(methodNotAllowed);
 
-
 // Attach handlers from ‘orders.controller.js’
 
 module.exports = router;
