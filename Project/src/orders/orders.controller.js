@@ -107,7 +107,7 @@ function updateValidation(req, res, next) {
 
 // Add a handler function to list all orders.
 function list(req, res, next) {
-  
+  res.json({ data: orders })
 }
 
 // Add a handler function to function to create an order.
@@ -121,7 +121,6 @@ function update(req, res, next) {}
 
 // Add a handler function to delete an order.
 function destroy(req, res, next) {
-
   orders.splice(res.locals.index, 1);
   res.sendStatus(204);
 }
@@ -131,5 +130,5 @@ module.exports = {
   create: [hasRequiredFields, create],
   read: [confirmOrderExists, read],
   update: [confirmOrderExists, updateValidation, update],
-  delete: [confirmOrderExists, , destroy],
+  delete: [confirmOrderExists, destroy]
 };
