@@ -17,7 +17,7 @@ function confirmOrderExists(req, res, next) {
       message: `No order with ID: ${orderId} could be found.`,
     });
   res.locals.order = foundOrder; // else push to res.locals if we do find it
-  return next;
+  return next();
 }
 
 function hasRequiredFields(req, res, next) {

@@ -43,7 +43,7 @@ function updateValidation(req, res, next) {
     if (dishId !== data.id && data.id) {
         return next({
             status: 400,
-            message: `Dish id: ${data.id} does not match route id: ${orderId}`
+            message: `Dish id: ${data.id} does not match route id: ${dishId}`
         })
     }
     next();
@@ -61,12 +61,12 @@ function list(req, res) {
 // Add handler function to create a dish
 function create(req, res) {
   dishes.push(res.locals.dish);
-  res.locals.newDish;
+  res.json({ data : res.locals.newDish });
 }
 
 // Add handler function to read a dish by ID
 function read(req, res) {
-  res.locals.dish;
+  res.json({ data : res.locals.dish });
 }
 
 // Add handler function to update a dish
