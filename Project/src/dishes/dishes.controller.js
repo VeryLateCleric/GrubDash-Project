@@ -11,7 +11,7 @@ const nextId = require("../utils/nextId");
 // Add middleware to validate dish data.
 function hasRequiredFields(req, res, next) {
   const { data: { name, description, price, image_url } = {} } = req.body;
-
+// 
   if (!name || !description || !price || !(typeof price === "number") || price < 0 || !image_url
   ) {
     let missingProperty = !name ? "name" : !description ? "description" : !price ? "price" : !(typeof price === "number") || price < 0 ? "price that is an integer greater than 0" : "image_url";
@@ -46,6 +46,7 @@ function updateValidation(req, res, next) {
             message: `Dish id: ${data.id} does not match route id: ${orderId}`
         })
     }
+    next();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -62,6 +63,7 @@ function create(req, res) {
   dishes.push(res.locals.dish);
   res.locals.newDish;
 }
+
 // Add handler function to read a dish by ID
 function read(req, res) {
   res.locals.dish;
