@@ -11,7 +11,7 @@ router
   .delete(controller.delete)
   .all(methodNotAllowed);
 
-  // Add route to handle ‘/orders’ with handlers for create and list operations.
+// Add route to handle ‘/orders’ with handlers for create and list operations.
 router
   .route("/")
   .get(controller.list)
