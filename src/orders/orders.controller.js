@@ -17,7 +17,7 @@ function confirmOrderExists(req, res, next) {
       message: `No order with ID: ${orderId} could be found.`,
     });
   res.locals.order = foundOrder; // else push to res.locals if we do find it
-  return next;
+  return next();
 }
 
 function hasRequiredFields(req, res, next) {
@@ -48,31 +48,50 @@ function hasRequiredFields(req, res, next) {
       status: 400,
       message: "Order must include array of at least one dish",
     });
+  } else {
+    res.locals.newOrder = req.body.data
+    next()
   }
 }
 
 // Update Validation Middleware
+function validateDishes(req, res, next) {
+  const { dishes } = res.locals.newOrder;
+  // dishes must be an array that is not empty
+  if (!dishes || !Array.isArray(dishes) || !dishes.length)
+    return next({
+      status: 400,
+      message: `Order must include at least one dish`,
+    });
+
+  // Each dish in dishes needs to have a quantity and it must be a positive integer
+  dishes.forEach(({ quantity }, index) => {
+    if (!quantity || quantity < 0 || !Number.isInteger(quantity))
+      return next({
+        status: 400,
+        message: `Dish ${index} must have a quantity that is an integer greater than 0`,
+      });
+  });
+
+  return next();
+}
+
 function updateValidation(req, res, next) {
   const { data } = req.body;
   const { orderId } = req.params;
-  const validStatuses = ["pending", "preparing", "out-for-delivery", "delivered",
-  ];
+  const validStatuses = ["pending", "preparing", "out-for-delivery", "delivered"];
 
   if (data.id && data.id !== orderId) {
     return next({
       status: 400,
-      message: `Order ID: ${data.id} does not match with route ID: ${orderId}`,
+      message: `Order id: ${data.id} does not match with route ID: ${orderId}`,
     });
-  }
-
-  if (data.status === "delivered") {
+  } else if (data.status === "delivered") {
     return next({
       status: 400,
       message: "A delivered order cannot be changed",
     });
-  }
-
-  if (validStatuses.includes(data.status)) {
+  } else if (validStatuses.includes(data.status)) {
     data.id = orderId;
     res.locals.update = data;
     return next();
@@ -83,15 +102,17 @@ function updateValidation(req, res, next) {
         "Order must have a status of pending, preparing, out-for-delivery, or delivered",
     });
   }
+  
 }
 
 // Add Delete validation for pending status here
 function deleteValidation(req, res, next) {
-  res.locals.order.status !== "pending" ?
-  next({
-    status: 400,
-    message: "Orders cannot be deleted unless thay have 'pending' status"
-  }) :
+  if (res.locals.order.status !== "pending") {
+    return next({
+      status: 400,
+      message: "Orders cannot be deleted unless thay have 'pending' status"
+    })
+  }
   next();
 }
 
@@ -105,10 +126,10 @@ function list(req, res, next) {
 }
 
 // Add a handler function to function to create an order.
-function create(req, res, next) {
-  res.locals.create.id = nextId()
-  orders.push(res.locals.create)
-  res.status(201).json({ data : res.locals})
+function create(req, res) {
+  res.locals.newOrder = { ...res.locals.newOrder, id: nextId() };
+  orders.push(res.locals.newOrder);
+  res.status(201).json({ data: res.locals.newOrder });
 }
 
 // Add a handler function to read an order by ID.
@@ -123,14 +144,15 @@ function update(req, res, next) {
 
 // Add a handler function to delete an order.
 function destroy(req, res, next) {
-  orders.splice(res.locals.index, 1);
+  const index = orders.indexOf(res.locals.foundOrder)
+  orders.splice(index, 1);
   res.sendStatus(204);
 }
 
 module.exports = {
   list,
-  create: [hasRequiredFields, create],
+  create: [hasRequiredFields, validateDishes, create],
   read: [confirmOrderExists, read],
-  update: [confirmOrderExists, hasRequiredFields, updateValidation, update],
+  update: [confirmOrderExists, hasRequiredFields, validateDishes, updateValidation, update],
   delete: [confirmOrderExists, deleteValidation, destroy]
 };

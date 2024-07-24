@@ -40,13 +40,19 @@ function confirmDishExists(req, res, next) {
 function updateValidation(req, res, next) {
     const { dishId } = req.params;
     const { data } = req.body;
+    const dishExists = dishes.find((dish) => dish.id === dishId);
+    const index = dishes.findIndex((dish) => dish.id === dishId)
     if (dishId !== data.id && data.id) {
         return next({
             status: 400,
-            message: `Dish id: ${data.id} does not match route id: ${orderId}`
+            message: `Dish id: ${data.id} does not match route id: ${dishId}`
         })
+    } else if (dishExists){
+      data.id = dishId
+      res.locals.dish = data
+      dishes[index] = data
+      next()
     }
-    next();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -59,14 +65,21 @@ function list(req, res) {
 }
 
 // Add handler function to create a dish
-function create(req, res) {
+function create(req, res, next) {
+  // const newDish = {
+  //   id: nextId(),
+  //   name: name,
+  //   description: description,
+  //   price: price,
+  //   image_url: image_url
+  // };
   dishes.push(res.locals.dish);
-  res.locals.newDish;
+  res.status(201).json({ data : res.locals.dish });
 }
 
 // Add handler function to read a dish by ID
 function read(req, res) {
-  res.locals.dish;
+  res.json({ data : res.locals.dish });
 }
 
 // Add handler function to update a dish
