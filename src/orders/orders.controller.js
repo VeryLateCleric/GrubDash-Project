@@ -63,16 +63,12 @@ function updateValidation(req, res, next) {
       status: 400,
       message: `Order ID: ${data.id} does not match with route ID: ${orderId}`,
     });
-  }
-
-  if (data.status === "delivered") {
+  } else if (data.status === "delivered") {
     return next({
       status: 400,
       message: "A delivered order cannot be changed",
     });
-  }
-
-  if (validStatuses.includes(data.status)) {
+  } else if (validStatuses.includes(data.status)) {
     data.id = orderId;
     res.locals.update = data;
     return next();
@@ -87,11 +83,12 @@ function updateValidation(req, res, next) {
 
 // Add Delete validation for pending status here
 function deleteValidation(req, res, next) {
-  res.locals.order.status !== "pending" ?
-  next({
-    status: 400,
-    message: "Orders cannot be deleted unless thay have 'pending' status"
-  }) :
+  if (res.locals.order.status !== "pending") {
+    return next({
+      status: 400,
+      message: "Orders cannot be deleted unless thay have 'pending' status"
+    })
+  }
   next();
 }
 
@@ -123,7 +120,8 @@ function update(req, res, next) {
 
 // Add a handler function to delete an order.
 function destroy(req, res, next) {
-  orders.splice(res.locals.index, 1);
+  const index = orders.indexOf(res.locals.foundOrder)
+  orders.splice(index, 1);
   res.sendStatus(204);
 }
 
