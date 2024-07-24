@@ -48,10 +48,34 @@ function hasRequiredFields(req, res, next) {
       status: 400,
       message: "Order must include array of at least one dish",
     });
+  } else {
+    res.locals.newOrder = req.body.data
+    next()
   }
 }
 
 // Update Validation Middleware
+function validateDishes(req, res, next) {
+  const { dishes } = res.locals.newOrder;
+  // dishes must be an array that is not empty
+  if (!dishes || !Array.isArray(dishes) || !dishes.length)
+    return next({
+      status: 400,
+      message: `Order must include at least one dish`,
+    });
+
+  // Each dish in dishes needs to have a quantity and it must be a positive integer
+  dishes.forEach(({ quantity }, index) => {
+    if (!quantity || quantity < 0 || !Number.isInteger(quantity))
+      return next({
+        status: 400,
+        message: `Dish ${index} must have a quantity that is an integer greater than 0`,
+      });
+  });
+
+  return next();
+}
+
 function updateValidation(req, res, next) {
   const { data } = req.body;
   const { orderId } = req.params;
@@ -102,10 +126,10 @@ function list(req, res, next) {
 }
 
 // Add a handler function to function to create an order.
-function create(req, res, next) {
-  res.locals.create.id = nextId()
-  orders.push(res.locals.create)
-  res.status(201).json({ data : res.locals})
+function create(req, res) {
+  res.locals.newOrder = { ...res.locals.newOrder, id: nextId() };
+  orders.push(res.locals.newOrder);
+  res.status(201).json({ data: res.locals.newOrder });
 }
 
 // Add a handler function to read an order by ID.
@@ -127,8 +151,8 @@ function destroy(req, res, next) {
 
 module.exports = {
   list,
-  create: [hasRequiredFields, create],
+  create: [hasRequiredFields, validateDishes, create],
   read: [confirmOrderExists, read],
-  update: [confirmOrderExists, hasRequiredFields, updateValidation, update],
+  update: [confirmOrderExists, hasRequiredFields, validateDishes, updateValidation, update],
   delete: [confirmOrderExists, deleteValidation, destroy]
 };
