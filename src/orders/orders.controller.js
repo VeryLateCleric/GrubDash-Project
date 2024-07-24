@@ -79,13 +79,12 @@ function validateDishes(req, res, next) {
 function updateValidation(req, res, next) {
   const { data } = req.body;
   const { orderId } = req.params;
-  const validStatuses = ["pending", "preparing", "out-for-delivery", "delivered",
-  ];
+  const validStatuses = ["pending", "preparing", "out-for-delivery", "delivered"];
 
   if (data.id && data.id !== orderId) {
     return next({
       status: 400,
-      message: `Order ID: ${data.id} does not match with route ID: ${orderId}`,
+      message: `Order id: ${data.id} does not match with route ID: ${orderId}`,
     });
   } else if (data.status === "delivered") {
     return next({
@@ -103,6 +102,7 @@ function updateValidation(req, res, next) {
         "Order must have a status of pending, preparing, out-for-delivery, or delivered",
     });
   }
+  
 }
 
 // Add Delete validation for pending status here
